@@ -1,0 +1,86 @@
+- hosts: master, slaves
+  gather_facts: false
+
+  tasks:
+          - name: "Copying files"
+            copy:
+                    src: /root/jdk
+                    dest: /root/jdk
+          
+          - name: "Copying files"
+            copy:
+                    src: /root/hadoop
+                    dest: /root/hadoop
+
+          - name: "Checking installations"
+            command: "java -version"
+            register: y
+            ignore_errors: true
+
+          - name: "Installing JDK"
+            command: "rpm -ivh jdk"
+            when: y.rc != 0
+
+          - name: "Checking installations"
+            command: "rpm -q hadoop"
+            register: x
+            ignore_errors: true
+
+
+          - name: "Installing Hadoop"
+            command: "rpm -ivh hadoop --force"
+            when: x.rc != 0
+
+- hosts: master
+  gather_facts: false
+  vars:
+          -  master_folder: "/nn"
+
+  tasks:
+          - name: "Configuring Hadoop"
+            template:
+                    src: hdfs-master.xml
+                    dest: /etc/hadoop/hdfs-site.xml
+
+          - name: "Configuring Hadoop"
+            template:
+                    src: coresite-master.xml
+                    dest: /etc/hadoop/core-site.xml
+
+          - name: "Creating Workspaces"
+            file:
+                    dest: master_folder
+                    state: directory
+
+          - name: "Formatting Folders"
+            command: "hadoop namenode -format"
+
+          - name: "Starting Services"
+            command: "hadoop-daemon.sh start namenode"
+
+ 
+- hosts: slaves
+  gather_facts: false
+  vars:
+          - slave_folder: "/dn"
+
+  tasks:
+          - name: "Configuring Hadoop"
+            template:
+                    src: hdfs-slave.xml
+                    dest: /etc/hadoop/hdfs-site.xml
+
+          - name: "Configuring Hadoop"
+            template:
+                    src: coresite-slave.xml
+                    dest: /etc/hadoop/core-site.xml
+
+          - name: "Creating Workspaces"
+            file:
+                    dest: slave_folder
+                    state: directory
+
+          - name: "Starting Services"
+            command: "hadoop-daemon.sh start datanode"
+
+
