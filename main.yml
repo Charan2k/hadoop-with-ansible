@@ -53,7 +53,7 @@
                     state: directory
 
           - name: "Formatting Folders"
-            command: "hadoop namenode -format"
+            command: "hadoop namenode -format -force"
 
           - name: "Starting Services"
             command: "hadoop-daemon.sh start namenode"
