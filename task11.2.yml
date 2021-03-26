@@ -1,0 +1,17 @@
+- hosts: node2
+  gather_facts: no
+  tasks:
+  - name: "Installing httpd"
+    package:
+      name: "httpd"
+      state: present
+      
+  - name: "Checking Services"
+    command: "systemctl status httpd"
+    register: x
+    ignore_errors: true
+    
+  - name: "Starting Services"
+    service:
+      name: "http"
+      state: restarted
